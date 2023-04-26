@@ -29,7 +29,7 @@ const fetchJarInfo = async (jarId) => {
 
     return data;
   } catch (error) {
-    console.error(error);
+    throw new Error(error);
   }
 };
 
