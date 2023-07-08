@@ -13,13 +13,11 @@ const {
 } = require("./src/notion");
 const { fetchJarInfo, parseJarIdFromUrl } = require("./src/monobank");
 const { scheduleTask, validate, CronosExpression } = require("cronosjs");
+const { prettyPrint } = require("./src/print");
 
 const update = async () => {
   const databaseId = process.env.NOTION_DATABASE_ID;
   const database = await queryDatabase(databaseId);
-
-  // console.log new line
-  console.log("\n");
 
   database.forEach(async (data) => {
     let pageId = data?.id;
@@ -38,52 +36,39 @@ const update = async () => {
       );
 
       await updateProgress(pageId, progress);
-      // console.log("pageId: ", pageId, "Progress updated: ", progress);
-      console.log(
-        "\x1b[36m%s\x1b[0m",
-        "pageId: ",
-        pageId,
-        "Progress updated: ",
-        progress,
-        "%"
+      prettyPrint(
+        "blue",
+        "success",
+        `pageId: ${pageId} Progress updated: ${progress}%`
       );
     } else if (
       jarStatus === M_STATUS_CLOSE &&
       data?.properties[PROPERTY_STATUS]?.status?.name === N_STATUS_ACTIVE
     ) {
-      console.log(
-        "\x1b[32m%s\x1b[0m",
-        "🎉 SUCCESS: ",
-        jarStatus,
-        data?.properties["Status"].status.name
+      prettyPrint(
+        "green",
+        "success",
+        `pageId: ${pageId} Status: ${jarStatus} Status: ${data?.properties["Status"].status.name}`
       );
       await finishDonation(pageId);
     } else {
-      console.log(
-        "\x1b[31m%s\x1b[0m",
-        "🚨 ERROR: ",
-        jarStatus,
-        data?.properties["Status"].status.name
+      prettyPrint(
+        "red",
+        "error",
+        `pageId: ${pageId} Status: ${jarStatus} Status: ${data?.properties["Status"].status.name}`
       );
     }
   });
 };
 
-console.log(
-  "\x1b[36m%s\x1b[0m",
-  "🚀 Script started with cron expression: ",
-  process.env.CRON_EXPRESSION
-);
-// Pretty print date time with emoji and colors in forma d/m/y h:m:s
-console.log(
-  "\x1b[36m%s\x1b[0m",
-  "⌚️ Started at: ",
-  new Date().toLocaleString("en-US", {
-    timeZone: "Asia/Ho_Chi_Minh",
-    hour12: false,
-  })
+prettyPrint(
+  "blue",
+  "rocket",
+  `Script started with cron expression: ${process.env.CRON_EXPRESSION}`
 );
 
-// update();
+if (process?.env?.RUN_SYNC_ON_START === "true") {
+  update();
+}
 
-scheduleTask(process.env.CRON_EXPRESSION, update);
+scheduleTask(process.env.CRON_EXPRESSION || "*/1 * * * *", update);

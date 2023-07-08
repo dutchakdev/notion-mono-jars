@@ -4,7 +4,7 @@
 
 ## Description
 
-Notion Donation is a web application that allows you to donate to your favorite charities using Notion database.
+🦄 Updating status and progress for pages in Notion database from Monobank jars
 
 ## Table of Contents
 
@@ -29,9 +29,13 @@ To install the project locally, follow these steps:
 ```
 NOTION_API_KEY=<your-notion-api-key>
 DATABASE_ID=<your-database-id>
+CRON_EXPRESSION="*/1 * * * *"
 ```
 
 7. Start the development server with `yarn start`
+
+## Development
+Use export RUN_SYNC_ON_START=true for start sync immediately
 
 ## Usage
 
