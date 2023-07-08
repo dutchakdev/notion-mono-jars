@@ -1,5 +1,6 @@
 const notion = require("@notionhq/client");
 const express = require("express");
+const cors = require("cors");
 const { queryDatabase } = require("./src/notion");
 const app = express();
 const port = process.env.PORT || 3001;
@@ -11,6 +12,7 @@ const cache = new NodeCache({ stdTTL: 120 });
 const notionClient = new notion.Client({ auth: process.env.NOTION_API_KEY });
 
 app.use(express.json());
+app.use(cors());
 
 // GET route to retrieve filtered database items
 app.get("/items", async (req, res, next) => {
