@@ -58,19 +58,31 @@ app.get("/items", async (req, res, next) => {
   }
 });
 
-app.get("/jar/:jarId", async (req, res, next) => {
-  let { jarId } = req?.params;
-  let jar = cache.get(jarId);
-  if (jar == undefined) {
-    let { jarGoal, jarAmount, jarStatus } = await fetchJarInfo(jarId);
-    cache.set(jarId, { jarGoal, jarAmount, jarStatus });
-
-    res.send({ jarGoal, jarAmount, jarStatus });
+app.param("jarId", (req, res, next, jarId) => {
+  if (jarId) {
+    // You need to implement this function
+    next();
   } else {
-    let { jarGoal, jarAmount, jarStatus } = jar;
-
-    res.send({ jarGoal, jarAmount, jarStatus });
+    res.status(400).send({ error: "Invalid jarId." });
   }
+});
+
+app.get("/jar/:jarId", async (req, res, next) => {
+  const { jarId } = req.params;
+  let jar = cache.get(jarId);
+
+  if (!jar) {
+    try {
+      const { jarGoal, jarAmount, jarStatus } = await fetchJarInfo(jarId);
+      jar = { jarGoal, jarAmount, jarStatus };
+      cache.set(jarId, jar);
+    } catch (error) {
+      console.error(error);
+      return res.status(500).send({ error: "Failed to fetch jar info." });
+    }
+  }
+
+  res.send(jar);
 });
 
 app.get("/", async (req, res, next) => {
